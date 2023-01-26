@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:15.1
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      PGDATA: /data/postgres
+    ports:
+      - 5432:5432 # WARNING: only for local development
+
+  redis:
+    container_name: redis
+    image: redis:bullseye
+
+  app:
+    container_name: app
+    image: python:3.10
+    volumes:
+      - ./:/src
+    environment:
+      POSTGRES_URL: ${POSTGRES_URL:-postgresql://postgres:postgres@postgres:5432}
+      REDIS_URL: ${REDIS_URL:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+    ports:
+      - 8080:5011
+    command: >
+      sh -c "cd /src
+      && pip install -r requirements.txt
+      && pip install gunicorn
+      && gunicorn -b 0.0.0.0:5011 -t 600 -w 1 'nunki.app.app:create_app()'"
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+
+  consumer:
+    container_name: consumer
+    image: python:3.10
+    volumes:
+      - ./:/src
+    environment:
+      POSTGRES_URL: ${POSTGRES_URL:-postgresql://postgres:postgres@postgres:5432}
+      REDIS_URL: ${REDIS_URL:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+    command: >
+      sh -c "cd /src
+      && pip install -r requirements.txt
+      && python consumer.py"
+    restart: always
+    depends_on:
+      - postgres
+      - redis
