@@ -1,0 +1,5 @@
+redis
+flask
+psycopg2-binary
+sqlalchemy<2.0
+sqlalchemy-utils
