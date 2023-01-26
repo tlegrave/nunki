@@ -8,7 +8,7 @@ from sqlalchemy_utils import URLType
 db_string = os.getenv("POSTGRES_URL", "postgresql://postgres:postgres@localhost:5432")
 echo = os.getenv("SQL_ECHO", "0")
 
-db = create_engine(db_string, echo=(echo == "1"), isolation_level="READ COMITTED")
+db = create_engine(db_string, echo=(echo == "1"), isolation_level="READ COMMITTED")
 
 Session = sessionmaker(db)
 base = declarative_base()
